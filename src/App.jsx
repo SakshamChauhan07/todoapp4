@@ -2,92 +2,150 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
-  // State to store the list of todos
   const [todos, setTodos] = useState(() => {
-    // Load initial todos from localStorage if they exist
     const savedTodos = localStorage.getItem("todos");
     return savedTodos ? JSON.parse(savedTodos) : [];
   });
 
-  // State for the input field
   const [inputValue, setInputValue] = useState("");
 
-  // Save todos to localStorage whenever the todos state changes
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
 
-  // Handle adding a new task
   const handleAddTodo = (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return; // Prevent adding empty tasks
+
+    if (!inputValue.trim()) return;
 
     const newTodo = {
-      id: Date.now(), // Unique ID
+      id: Date.now(),
       text: inputValue,
       completed: false,
     };
 
     setTodos([...todos, newTodo]);
-    setInputValue(""); // Clear input
+    setInputValue("");
   };
 
-  // Handle toggling the completed status
   const toggleComplete = (id) => {
     setTodos(
       todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        todo.id === id
+          ? { ...todo, completed: !todo.completed }
+          : todo
       )
     );
   };
 
-  // Handle deleting a task
   const handleDeleteTodo = (id) => {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const clearCompleted = () => {
+    setTodos(todos.filter((todo) => !todo.completed));
+  };
+
+  const completedTasks = todos.filter((todo) => todo.completed);
+  const pendingTasks = todos.filter((todo) => !todo.completed);
+
   return (
     <div className="app-container">
       <div className="todo-box">
-        <h2>Task Master</h2>
-        
-        {/* Input Form */}
+        <h2>🚀 Task Master</h2>
+
+        {/* Stats */}
+        <div className="todo-footer">
+          <p>📋 Total: {todos.length}</p>
+          <p>⏳ Pending: {pendingTasks.length}</p>
+          <p>✅ Completed: {completedTasks.length}</p>
+        </div>
+
+        {/* Add Task Form */}
         <form onSubmit={handleAddTodo} className="todo-form">
           <input
             type="text"
-            placeholder="Add a new task..."
+            placeholder="Enter a new task..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
           />
           <button type="submit">Add</button>
         </form>
 
-        {/* Todo List */}
-        <ul className="todo-list">
-          {todos.length === 0 ? (
-            <p className="empty-message">No tasks yet. Add one above!</p>
-          ) : (
-            todos.map((todo) => (
-              <li key={todo.id} className={todo.completed ? "completed" : ""}>
-                <span onClick={() => toggleComplete(todo.id)}>
+        {/* Pending Tasks */}
+        <h3>⏳ Pending Tasks</h3>
+
+        {pendingTasks.length === 0 ? (
+          <p className="empty-message">
+            No pending tasks 🎉
+          </p>
+        ) : (
+          <ul className="todo-list">
+            {pendingTasks.map((todo) => (
+              <li key={todo.id}>
+                <span
+                  onClick={() => toggleComplete(todo.id)}
+                >
                   {todo.text}
                 </span>
-                <button 
-                  className="delete-btn" 
+
+                <button
+                  className="delete-btn"
                   onClick={() => handleDeleteTodo(todo.id)}
                 >
-                  ✕
+                  🗑️
                 </button>
               </li>
-            ))
-          )}
-        </ul>
-        
-        {/* Task Counter */}
-        {todos.length > 0 && (
-          <div className="todo-footer">
-            <p>{todos.filter(t => !t.completed).length} tasks remaining</p>
-          </div>
+            ))}
+          </ul>
+        )}
+
+        {/* Completed Tasks */}
+        <h3 style={{ marginTop: "25px" }}>
+          ✅ Completed Tasks
+        </h3>
+
+        {completedTasks.length === 0 ? (
+          <p className="empty-message">
+            No completed tasks yet.
+          </p>
+        ) : (
+          <ul className="todo-list">
+            {completedTasks.map((todo) => (
+              <li
+                key={todo.id}
+                className="completed"
+              >
+                <span
+                  onClick={() => toggleComplete(todo.id)}
+                >
+                  {todo.text}
+                </span>
+
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDeleteTodo(todo.id)}
+                >
+                  🗑️
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Clear Completed */}
+        {completedTasks.length > 0 && (
+          <button
+            className="delete-btn"
+            style={{
+              marginTop: "20px",
+              width: "100%",
+              padding: "12px",
+            }}
+            onClick={clearCompleted}
+          >
+            Clear Completed Tasks
+          </button>
         )}
       </div>
     </div>
